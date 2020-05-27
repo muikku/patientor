@@ -8,6 +8,7 @@ import { Patient } from "../types";
 import { apiBaseUrl } from "../constants";
 import HealthRatingBar from "../components/HealthRatingBar";
 import { useStateValue } from "../state";
+import { NavLink } from "react-router-dom";
 
 const PatientListPage: React.FC = () => {
   const [{ patients }, dispatch] = useStateValue();
@@ -52,8 +53,8 @@ const PatientListPage: React.FC = () => {
         </Table.Header>
         <Table.Body>
           {Object.values(patients).map((patient: Patient) => (
-            <Table.Row key={patient.id}>
-              <Table.Cell>{patient.name}</Table.Cell>
+            <Table.Row key={patient.id} >
+              <Table.Cell><NavLink to={`/patients/${patient.id}`}>{patient.name}</NavLink></Table.Cell>
               <Table.Cell>{patient.gender}</Table.Cell>
               <Table.Cell>{patient.occupation}</Table.Cell>
               <Table.Cell>
