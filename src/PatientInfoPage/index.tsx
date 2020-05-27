@@ -5,25 +5,27 @@ import { Container } from "semantic-ui-react";
 import { Patient } from "../types";
 import { apiBaseUrl } from "../constants";
 import { useStateValue } from "../state";
+import { useParams } from "react-router-dom";
 
 const PatientInfoPage: React.FC = () => {
+  const { id } = useParams();
   const [{ patients }, dispatch] = useStateValue();
 
-/*
-  const submitNewPatient = async (values: PatientFormValues) => {
-    try {
-      const { data: newPatient } = await axios.post<Patient>(
-        `${apiBaseUrl}/patients`,
-        values
-      );
-      dispatch({ type: "ADD_PATIENT", payload: newPatient });
-      closeModal();
-    } catch (e) {
-      console.error(e.response.data);
-      setError(e.response.data.error);
-    }
-  };
-*/
+  React.useEffect(() => {
+    const fetchPatientsData = async () => {
+      try {
+        const { data: PatientData } = await axios.get<Patient[]>(
+          `${apiBaseUrl}/patients/${id}`
+        );
+        console.log('got the data!', PatientData);
+       /* dispatch({ type: "SET_PATIENT_LIST", payload: patientListFromApi });*/
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchPatientsData();
+  }, [dispatch]);
+
   return (
     <div className="PatientInfoPage">
       <Container textAlign="center">
