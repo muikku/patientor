@@ -4,7 +4,7 @@ import { Container, Icon, Header, Table } from "semantic-ui-react";
 
 import { Patient } from "../types";
 import { apiBaseUrl } from "../constants";
-import { useStateValue } from "../state";
+import { useStateValue, extendPatient } from "../state";
 import { useParams } from "react-router-dom";
 
 const PatientInfoPage: React.FC = () => {
@@ -21,7 +21,7 @@ const PatientInfoPage: React.FC = () => {
         const { data: PatientData } = await axios.get<Patient>(
           `${apiBaseUrl}/patients/${id}`
         );
-       dispatch({ type: "EXTEND_PATIENT", payload: PatientData });
+       dispatch(extendPatient(PatientData));
       } catch (e) {
         console.error(e);
       }
