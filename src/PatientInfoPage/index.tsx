@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Container } from "semantic-ui-react";
+import { Container, Icon, Header, Table } from "semantic-ui-react";
 
 import { Patient } from "../types";
 import { apiBaseUrl } from "../constants";
@@ -45,12 +45,41 @@ const PatientInfoPage: React.FC = () => {
     return null;
   }
 
+  const iconName = (patient: Patient) =>  {
+    switch (patient.gender) {
+      case "male":
+        return (<Icon name='mars'/>);
+      case "female":
+        return <Icon name='venus'/>;
+      default:
+        return <Icon name='user secret'/>;
+    }
+  };
+
   return (
     <div className="PatientInfoPage">
       <Container textAlign="center">
-        <h3>{patient.name} {patient.gender}</h3>
+        <Header as="h2">{patient.name} {iconName(patient)}</Header>
+        <div>date of birth: {patient.dateOfBirth}</div>
         <div>ssn: {patient.ssn}</div>
         <div>occupation: {patient.occupation}</div>
+        <Table celled>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Entries</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {patient.entries && 
+          patient.entries.length > 1 && 
+          patient.entries?.map((entry: string) => (
+            <Table.Row key={entry} >
+              <Table.Cell>{entry}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+        <div></div>
       </Container>
     </div>
   );
