@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState,  } from "react";
 import axios from "axios";
-import { Container, Icon, Header, Table } from "semantic-ui-react";
+import { Icon, Header } from "semantic-ui-react";
 
-import { Patient } from "../types";
+import { Patient, Entry, Diagnosis } from "../types";
 import { apiBaseUrl } from "../constants";
 import { useStateValue, extendPatient } from "../state";
 import { useParams } from "react-router-dom";
@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 const PatientInfoPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [{ patients }, dispatch] = useStateValue();
+  const [{ diagnoses }] = useStateValue();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [fetcing, setFetching] = useState(false);
 
@@ -41,7 +42,7 @@ const PatientInfoPage: React.FC = () => {
     }
   }, [dispatch, id, patients, fetcing]);
 
-  if(!patient){
+  if(!patient || !diagnoses){
     return null;
   }
 
@@ -56,33 +57,48 @@ const PatientInfoPage: React.FC = () => {
     }
   };
 
+  const getDiagnosis = (code: string): Diagnosis | null => {
+    const keys = Object.keys(diagnoses);
+    if(keys.includes(code)){
+      return diagnoses[code];
+    }
+    return null;
+  };
+
   return (
     <div className="PatientInfoPage">
-      <Container textAlign="center">
         <Header as="h2">{patient.name} {iconName(patient)}</Header>
         <div>date of birth: {patient.dateOfBirth}</div>
         <div>ssn: {patient.ssn}</div>
         <div>occupation: {patient.occupation}</div>
-        <Table celled>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Entries</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {patient.entries && 
-          patient.entries.length > 1 && 
-          patient.entries?.map((entry: string) => (
-            <Table.Row key={entry} >
-              <Table.Cell>{entry}</Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-        <div></div>
-      </Container>
+        <Header as="h4">Entries</Header>
+          <div>
+          {
+            patient.entries && 
+            patient.entries.length >= 1 && 
+            patient.entries?.map((entry: Entry) => (
+              <div key={entry.id}>
+              <div>{entry.date} {entry.description}</div>
+              <ul>
+                {entry.diagnosisCodes
+                 && entry.diagnosisCodes
+                 .map(c => getDiagnosis(c))
+                 .map(c => c 
+                  ?
+                  (<li key={c.code}>{c.code} {c.name}</li>) 
+                  :
+                   null
+                   )
+                }
+              </ul>          
+            </div>
+              )
+            )
+          }
+        </div>
     </div>
   );
 };
+
 
 export default PatientInfoPage;
