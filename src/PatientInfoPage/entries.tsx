@@ -1,6 +1,6 @@
 import React from 'react';
 import { Entry, Diagnosis } from '../types';
-import { Segment, Header } from 'semantic-ui-react';
+import { Segment, Header, Icon, Rating } from 'semantic-ui-react';
 import { useStateValue } from '../state';
 
 const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
@@ -27,11 +27,24 @@ const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
     );
   };
 
+  const EntryTypeIcon = (type: string) => {
+    switch (type) {
+    case 'Hospital':
+      return <Icon name='hospital symbol'/>;
+    case 'HealthCheck':
+      return <Icon name='doctor'/>;
+    case 'OccupationalHealthcare':
+      return <Icon name='clipboard'/>;
+    default:
+      throw new Error('Incorret type');
+    }
+  };
+
   const BaseEntryInfo: React.FC<{ entry: Entry }> = ({ entry, children }) => {
     const { description, type, date, specialist } = entry;
     return (
       <Segment>
-        <Header as="h5">{date} {type}</Header>
+        <Header as="h5">{date} {EntryTypeIcon(type)}</Header>
         <div>{description}</div>
         <div>{specialist}</div>
         {children}
@@ -53,12 +66,11 @@ const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
     );
   case 'OccupationalHealthcare':
     const { employerName, sickLeave } = entry;
-    const { startDate, endDate } = sickLeave;
     return (
       <BaseEntryInfo entry={entry}>
         <div>
           <div>Employer name: {employerName}</div>
-          <div>Sick leave: {startDate} - {endDate}</div>
+          {sickLeave ? <div>Sick leave: {sickLeave.startDate} - {sickLeave.endDate}</div> : null}
         </div>
       </BaseEntryInfo>
     );
@@ -67,7 +79,7 @@ const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
     return (
 
       <BaseEntryInfo entry={entry}>
-        <div>{healthCheckRating}</div>
+        <Rating icon='heart' defaultRating={3-healthCheckRating} maxRating={3} disabled />
       </BaseEntryInfo>
     );
 
