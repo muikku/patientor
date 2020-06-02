@@ -68,12 +68,11 @@ const PatientInfoPage: React.FC = () => {
           throw new Error('Form returned something extraordinary');
         }
       };
-      const { data: Entry } = await axios.post<Entry>(
+      const { data: Patient } = await axios.post<Patient>(
         `${apiBaseUrl}/patients/${id}/entries`,
         formEntryData()
       );
-      console.log('data! ', Entry);
-      /*dispatch(addPatient(newPatient));*/
+      dispatch(extendPatient(Patient));
       closeModal();
     } catch (e) {
       console.error(e.response.data);
