@@ -6,7 +6,7 @@ import { TextField, DiagnosisSelection, NumberField } from '../AddPatientModal/F
 import { Entry } from '../types';
 import { useStateValue } from '../state';
 
-export type BaseEntryFormValues = Omit<Entry, 'id'>;
+export type BaseEntryFormValues = Omit<Entry, 'id' | 'type'>;
 export interface HospitalFormValues extends BaseEntryFormValues {
   type: 'Hospital';
   dischargeCriteria: string;
@@ -25,9 +25,15 @@ export interface HealthCheckFormValues extends BaseEntryFormValues {
   healthCheckRating: number;
 }
 
+export interface InitialValues extends BaseEntryFormValues {
+  type: string;
+}
+
+export type EntryFormValues = OccupationalFormValues | HealthCheckFormValues | HospitalFormValues | InitialValues;
+
 
 interface Props {
-  onSubmit: (values: BaseEntryFormValues | HealthCheckFormValues | OccupationalFormValues | HospitalFormValues) => void;
+  onSubmit: (values: EntryFormValues) => void;
   onCancel: () => void;
 }
 
@@ -41,6 +47,7 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
   const [{ diagnoses }] = useStateValue();
 
   const [formType, setFormType] = useState('Hospital');
+
   const handleClick = (event: { target: { value: React.SetStateAction<string> } }) => {
     setFormType(event.target.value);
   };
@@ -52,24 +59,50 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
         date: '',
         specialist: '',
         diagnosisCodes: [],
+        healthCheckRating: '',
+        employerName: '',
+        startDate: '',
+        endDate: '',
+        dischargeCriteria: '',
+        dischargeDate: ''
       }}
       onSubmit={onSubmit}
       validate={values => {
         const requiredError = 'Field is required';
         const errors: { [field: string]: string } = {};
-        /*
-        if (!values.name) {
-          errors.name = requiredError;
+        if (!values.type) {
+          errors.type = requiredError;
         }
-        if (!values.ssn) {
-          errors.ssn = requiredError;
+        if (!values.description) {
+          errors.description = requiredError;
         }
-        if (!values.dateOfBirth) {
-          errors.dateOfBirth = requiredError;
+        if (!values.date) {
+          errors.date = requiredError;
         }
-        if (!values.occupation) {
-          errors.occupation = requiredError;
-        }*/
+        if (!values.specialist) {
+          errors.specialist = requiredError;
+        }
+        if(values.type === 'Hospital'){
+          if(!values.dischargeCriteria){
+            errors.dischargeCriteria = requiredError;
+          }
+          if(!values.dischargeDate){
+            errors.dischargeDate = requiredError;
+          }
+        }
+        if(values.type === 'OccupationalHealthcare'){
+          if(!values.employerName){
+            errors.employerName = requiredError;
+          }
+          if(!values.startDate){
+            ///start and end date are optional
+          }
+        }
+        if(values.type === 'HealthCheck'){
+          if(!values.healthCheckRating){
+            errors.healthCheckRating = requiredError;
+          }
+        }
         console.log(requiredError, values);
         return errors;
       }}
