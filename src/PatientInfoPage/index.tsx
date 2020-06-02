@@ -1,7 +1,7 @@
 import React, { useState,  } from 'react';
 import axios from 'axios';
 import { Icon, Header, Button } from 'semantic-ui-react';
-import { EntryFormValues } from '../AddEntryModal/AddEntryForm';
+import { OccupationalFormValues, HospitalFormValues, HealthCheckFormValues } from '../AddEntryModal/AddEntryForm';
 import { Patient, Entry } from '../types';
 import { apiBaseUrl } from '../constants';
 import { useStateValue, extendPatient } from '../state';
@@ -21,25 +21,65 @@ const PatientInfoPage: React.FC = () => {
     setError(undefined);
   };
 
-  const submitNewEntry =  (values: EntryFormValues) => {
-    try {
-      console.log('values! ', values);
-      /* const { data: newPatient } = await axios.post<Patient>(
-        `${apiBaseUrl}/patients`,
-        values
+  const { id } = useParams<{ id: string }>();
+  const [{ patients }, dispatch] = useStateValue();
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [fetcing, setFetching] = useState(false);
+
+  const submitNewEntry = async (values: OccupationalFormValues | HospitalFormValues | HealthCheckFormValues) => {
+    try{
+      const formEntryData = () => {
+        switch (values.type) {
+        case 'Hospital':
+          return ({
+            type: values.type,
+            description: values.description,
+            date: values.date,
+            specialist: values.specialist,
+            diagnosisCodes: values.diagnosisCodes ? values.diagnosisCodes : [],
+            discharge:  {
+              criteria: values.dischargeCriteria,
+              date: values.dischargeDate
+            }
+          });
+        case 'OccupationalHealthcare':
+          return ({
+            type: values.type,
+            description: values.description,
+            date: values.date,
+            specialist: values.specialist,
+            diagnosisCodes: values.diagnosisCodes ? values.diagnosisCodes : [],
+            employerName:  values.employerName,
+            sickLeave: values.startDate && values.endDate ? {
+              startDate: values.startDate,
+              endDate: values.endDate
+            } : undefined
+          });
+        case 'HealthCheck':
+          return ({
+            type: values.type,
+            description: values.description,
+            date: values.date,
+            specialist: values.specialist,
+            diagnosisCodes: values.diagnosisCodes ? values.diagnosisCodes : [],
+            healthCheckRating:  values.healthCheckRating
+          });
+        default:
+          throw new Error('Form returned something extraordinary');
+        }
+      };
+      const { data: Entry } = await axios.post<Entry>(
+        `${apiBaseUrl}/patients/${id}/entries`,
+        formEntryData()
       );
-      dispatch(addPatient(newPatient));*/
+      console.log('data! ', Entry);
+      /*dispatch(addPatient(newPatient));*/
       closeModal();
     } catch (e) {
       console.error(e.response.data);
       setError(e.response.data.error);
     }
   };
-
-  const { id } = useParams<{ id: string }>();
-  const [{ patients }, dispatch] = useStateValue();
-  const [patient, setPatient] = useState<Patient | null>(null);
-  const [fetcing, setFetching] = useState(false);
 
   const containsSSN = (obj: Patient) => 'ssn' in obj;
 

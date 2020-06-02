@@ -1,24 +1,49 @@
 import React, { useState } from 'react';
-import { Grid, Button } from 'semantic-ui-react';
+import { Grid, Button, Form as SUForm } from 'semantic-ui-react';
 import { Field, Formik, Form } from 'formik';
 
 import { TextField, DiagnosisSelection, NumberField } from '../AddPatientModal/FormField';
 import { Entry } from '../types';
 import { useStateValue } from '../state';
 
-export type EntryFormValues = Omit<Entry, 'id'>;
+export type BaseEntryFormValues = Omit<Entry, 'id'>;
+export interface HospitalFormValues extends BaseEntryFormValues {
+  type: 'Hospital';
+  dischargeCriteria: string;
+  dischargeDate: string;
+}
+
+export interface OccupationalFormValues extends BaseEntryFormValues {
+  type: 'OccupationalHealthcare';
+  employerName: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface HealthCheckFormValues extends BaseEntryFormValues {
+  type: 'HealthCheck';
+  healthCheckRating: number;
+}
+
 
 interface Props {
-  onSubmit: (values: EntryFormValues) => void;
+  onSubmit: (values: BaseEntryFormValues | HealthCheckFormValues | OccupationalFormValues | HospitalFormValues) => void;
   onCancel: () => void;
 }
 
+const options = [
+  { value: 'Hospital', label: 'Hospital entry' },
+  { value: 'OccupationalHealthcare', label: 'Occupational healthcare entry' },
+  { value: 'HealthCheck', label: 'Health check entry' }
+];
 
 export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
   const [{ diagnoses }] = useStateValue();
 
   const [formType, setFormType] = useState('Hospital');
-
+  const handleClick = (event: { target: { value: React.SetStateAction<string> } }) => {
+    setFormType(event.target.value);
+  };
   return (
     <Formik
       initialValues={{
@@ -27,7 +52,6 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
         date: '',
         specialist: '',
         diagnosisCodes: [],
-
       }}
       onSubmit={onSubmit}
       validate={values => {
@@ -53,6 +77,16 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
       {({ isValid, dirty, setFieldValue, setFieldTouched }) => {
         return (
           <Form className="form ui">
+            <SUForm.Field>
+              <label>Entry type</label>
+              <Field as="select" name='type' className="ui dropdown" onClick={handleClick} >
+                {options.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label || option.value}
+                  </option>
+                ))}
+              </Field>
+            </SUForm.Field>
             {
               formType === 'Hospital' &&
               <div>
@@ -173,21 +207,6 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
             }
 
             <Grid>
-              <Grid.Column floated="left" width={5}>
-                <Button type="button" onClick={() => setFormType('Hospital')} color="red">
-                  Hospital
-                </Button>
-              </Grid.Column>
-              <Grid.Column floated="left" width={5}>
-                <Button type="button" onClick={() => setFormType('OccupationalHealthcare')} color="red">
-                  Occupational healthcare
-                </Button>
-              </Grid.Column>
-              <Grid.Column floated="left" width={5}>
-                <Button type="button" onClick={() => setFormType('HealthCheck')} color="red">
-                  Health check
-                </Button>
-              </Grid.Column>
               <Grid.Column floated="left" width={5}>
                 <Button type="button" onClick={onCancel} color="red">
                   Cancel
