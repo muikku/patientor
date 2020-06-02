@@ -109,7 +109,7 @@ const PatientInfoPage: React.FC = () => {
         error={error}
         onClose={closeModal}
       />
-      <Button onClick={() => openModal()}>Add New Patient</Button>
+      <Button onClick={() => openModal()}>Add New Entry</Button>
     </div>
   );
 };

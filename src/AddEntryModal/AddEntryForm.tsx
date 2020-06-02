@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Grid, Button } from 'semantic-ui-react';
 import { Field, Formik, Form } from 'formik';
 
-import { TextField, SelectField } from '../AddPatientModal/FormField';
+import { TextField, DiagnosisSelection, NumberField } from '../AddPatientModal/FormField';
 import { Entry } from '../types';
+import { useStateValue } from '../state';
 
 export type EntryFormValues = Omit<Entry, 'id'>;
 
@@ -14,16 +15,9 @@ interface Props {
 
 
 export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
-
-  const basefields = ['description', 'date', 'specialist', 'diagnosisCodes'];
-  const healthCheckFields = [...basefields, 'healthCheckRating'];
-  const hospitalFields = [...basefields, 'discharge'];
-  const occupationalFields = [...basefields, 'employerName', 'sickLeave'];
+  const [{ diagnoses }] = useStateValue();
 
   const [formType, setFormType] = useState('Hospital');
-  const [diagnoses, setDiagnoses] = useState([]);
-  const [fields, setFields] = useState(hospitalFields);
-
 
   return (
     <Formik
@@ -32,7 +26,7 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
         description: '',
         date: '',
         specialist: '',
-        diagnosisCodes: diagnoses,
+        diagnosisCodes: [],
 
       }}
       onSubmit={onSubmit}
@@ -56,32 +50,128 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
         return errors;
       }}
     >
-      {({ isValid, dirty }) => {
+      {({ isValid, dirty, setFieldValue, setFieldTouched }) => {
         return (
           <Form className="form ui">
-            <Field
-              label="Entry type"
-              placeholder={formType}
-              name="entrytype"
-            />
-            <Field
-              label="Social Security Number"
-              placeholder="SSN"
-              name="ssn"
-              component={TextField}
-            />
-            <Field
-              label="Date Of Birth"
-              placeholder="YYYY-MM-DD"
-              name="dateOfBirth"
-              component={TextField}
-            />
-            <Field
-              label="Occupation"
-              placeholder="Occupation"
-              name="occupation"
-              component={TextField}
-            />
+            {
+              formType === 'Hospital' &&
+              <div>
+                <Field
+                  label="Description"
+                  name="description"
+                  component={TextField}
+                />
+                <Field
+                  label="Date"
+                  placeholder="YYYY-MM-DD"
+                  name="date"
+                  component={TextField}
+                />
+                <Field
+                  label="Specialist"
+                  placeholder="specialist"
+                  name="specialist"
+                  component={TextField}
+                />
+                <DiagnosisSelection
+                  diagnoses={Object.values(diagnoses)}
+                  setFieldTouched={setFieldTouched}
+                  setFieldValue={setFieldValue}
+                />
+                <Field
+                  label="Discharge criteria"
+                  placeholder="criteria"
+                  name="dischargeCriteria"
+                  component={TextField}
+                />
+                <Field
+                  label="Discharge date"
+                  placeholder="YYYY-MM-DD"
+                  name="dischargeDate"
+                  component={TextField}
+                />
+              </div>
+            }
+            {
+              formType === 'OccupationalHealthcare' &&
+              <div>
+                <Field
+                  label="Description"
+                  name="description"
+                  component={TextField}
+                />
+                <Field
+                  label="Date"
+                  placeholder="YYYY-MM-DD"
+                  name="date"
+                  component={TextField}
+                />
+                <Field
+                  label="Specialist"
+                  placeholder="specialist"
+                  name="specialist"
+                  component={TextField}
+                />
+                <DiagnosisSelection
+                  diagnoses={Object.values(diagnoses)}
+                  setFieldTouched={setFieldTouched}
+                  setFieldValue={setFieldValue}
+                />
+                <Field
+                  label="Employer Name"
+                  placeholder="mr moon"
+                  name="employerName"
+                  component={TextField}
+                />
+                <Field
+                  label="Sick leave start date"
+                  placeholder="YYYY-MM-DD"
+                  name="startDate"
+                  component={TextField}
+                />
+                <Field
+                  label="Sick leave end date"
+                  placeholder="YYYY-MM-DD"
+                  name="endDate"
+                  component={TextField}
+                />
+              </div>
+            }
+            {
+              formType === 'HealthCheck' &&
+              <div>
+                <Field
+                  label="Description"
+                  name="description"
+                  component={TextField}
+                />
+                <Field
+                  label="Date"
+                  placeholder="YYYY-MM-DD"
+                  name="date"
+                  component={TextField}
+                />
+                <Field
+                  label="Specialist"
+                  placeholder="specialist"
+                  name="specialist"
+                  component={TextField}
+                />
+                <DiagnosisSelection
+                  diagnoses={Object.values(diagnoses)}
+                  setFieldTouched={setFieldTouched}
+                  setFieldValue={setFieldValue}
+                />
+                <Field
+                  label="Health check rating"
+                  name="healthCheckRating"
+                  component={NumberField}
+                  min={0}
+                  max={3}
+                />
+              </div>
+            }
+
             <Grid>
               <Grid.Column floated="left" width={5}>
                 <Button type="button" onClick={() => setFormType('Hospital')} color="red">
@@ -94,7 +184,7 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
                 </Button>
               </Grid.Column>
               <Grid.Column floated="left" width={5}>
-                <Button type="button" onClick={() => setFormType('HealthC')} color="red">
+                <Button type="button" onClick={() => setFormType('HealthCheck')} color="red">
                   Health check
                 </Button>
               </Grid.Column>
