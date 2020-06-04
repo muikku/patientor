@@ -5,6 +5,7 @@ import { Field, Formik, Form } from 'formik';
 import { TextField, DiagnosisSelection, NumberField } from '../AddPatientModal/FormField';
 import { Entry } from '../types';
 import { useStateValue } from '../state';
+import { isDate, isEntryType } from '../utils/utils';
 
 export type BaseEntryFormValues = Omit<Entry, 'id' | 'type'>;
 export interface HospitalFormValues extends BaseEntryFormValues {
@@ -69,15 +70,22 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
       onSubmit={onSubmit}
       validate={values => {
         const requiredError = 'Field is required';
+        const formatError = (format: string) => `Value in wrong format. Correct format: ${format}`;
         const errors: { [field: string]: string } = {};
         if (!values.type) {
           errors.type = requiredError;
+        }
+        if(!isEntryType(values.type)){
+          errors.type = formatError('Hospital or OccupationalHealthcare or HealthCheck');
         }
         if (!values.description) {
           errors.description = requiredError;
         }
         if (!values.date) {
           errors.date = requiredError;
+        }
+        if(!isDate(values.date)){
+          errors.date = formatError('YYYY-MM-DD');
         }
         if (!values.specialist) {
           errors.specialist = requiredError;
@@ -89,13 +97,25 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
           if(!values.dischargeDate){
             errors.dischargeDate = requiredError;
           }
+          if(!isDate(values.dischargeDate)){
+            errors.dischargeDate = formatError('YYYY-MM-DD');
+          }
         }
         if(values.type === 'OccupationalHealthcare'){
           if(!values.employerName){
             errors.employerName = requiredError;
           }
-          if(!values.startDate){
-            ///start and end date are optional
+          if(!values.startDate && values.endDate){
+            errors.startDate = 'Start date required.';
+          }
+          if(values.startDate && !values.endDate){
+            errors.endDate = 'End date required.';
+          }
+          if(values.startDate && !isDate(values.startDate)){
+            errors.startDate = formatError('YYYY-MM-DD');
+          }
+          if(values.endDate && !isDate(values.endDate)){
+            errors.endDate = formatError('YYYY-MM-DD');
           }
         }
         if(values.type === 'HealthCheck'){
@@ -103,7 +123,6 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
             errors.healthCheckRating = requiredError;
           }
         }
-        console.log(requiredError, values);
         return errors;
       }}
     >
@@ -186,7 +205,7 @@ export const AddEntryForm: React.FC<Props> = ({ onSubmit, onCancel }) => {
                 />
                 <Field
                   label="Employer Name"
-                  placeholder="mr moon"
+                  placeholder="first name second name"
                   name="employerName"
                   component={TextField}
                 />
